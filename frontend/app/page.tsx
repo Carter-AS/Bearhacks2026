@@ -48,9 +48,9 @@ export default function Home() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search Gamerpedia..."
-            style={{ padding: "5px 10px", fontSize: 13, border: "1px solid #a2a9b1", borderRadius: 2, width: 240, fontFamily: "sans-serif" }}
+            style={{ padding: "5px 10px", fontSize: 13, border: "1px solid #a2a9b1", borderRadius: 2, width: 240, fontFamily: "sans-serif", color: "#202122" }}
           />
-          <button type="submit" style={{ padding: "5px 12px", fontSize: 13, cursor: "pointer", fontFamily: "sans-serif", background: "#f8f9fa", border: "1px solid #a2a9b1", borderRadius: 2 }}>Search</button>
+          <button type="submit" style={{ padding: "5px 12px", fontSize: 13, cursor: "pointer", fontFamily: "sans-serif", background: "#f8f9fa", border: "1px solid #a2a9b1", borderRadius: 2, color: "#202122" }}>Search</button>
         </form>
       </div>
 
@@ -75,12 +75,12 @@ export default function Home() {
             <div>
               <label style={{ fontSize: 12, fontFamily: "sans-serif", color: "#54595d", display: "block", marginBottom: 4 }}>Riot ID</label>
               <input
-                placeholder="e.g. Faker#KR1"
+                placeholder="e.g. HideOnBush#KR1"
                 value={riotUsername}
                 onChange={e => setRiotUsername(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleGenerate()}
-                style={{ width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid #a2a9b1", borderRadius: 2, fontFamily: "sans-serif", boxSizing: "border-box" }}
-              />
+                style={{ width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid #a2a9b1", borderRadius: 2, fontFamily: "sans-serif", boxSizing: "border-box", color: "#202122" }}
+                />
             </div>
             <div>
               <label style={{ fontSize: 12, fontFamily: "sans-serif", color: "#54595d", display: "block", marginBottom: 4 }}>Steam username <span style={{ color: "#72777d" }}>(optional)</span></label>
@@ -89,8 +89,8 @@ export default function Home() {
                 value={steamUsername}
                 onChange={e => setSteamUsername(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleGenerate()}
-                style={{ width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid #a2a9b1", borderRadius: 2, fontFamily: "sans-serif", boxSizing: "border-box" }}
-              />
+                style={{ width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid #a2a9b1", borderRadius: 2, fontFamily: "sans-serif", boxSizing: "border-box", color: "#202122" }}
+                />
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export default function Home() {
           <button
             onClick={handleGenerate}
             disabled={loading}
-            style={{ padding: "8px 20px", fontSize: 14, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, fontFamily: "sans-serif", background: "#f8f9fa", border: "1px solid #a2a9b1", borderRadius: 2 }}
+            style={{ padding: "8px 20px", fontSize: 14, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, fontFamily: "sans-serif", background: "#f8f9fa", border: "1px solid #a2a9b1", borderRadius: 2, color: "#202122" }}
           >
             {loading ? "Generating..." : "Generate article →"}
           </button>
