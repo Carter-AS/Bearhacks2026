@@ -19,7 +19,10 @@ def fetch_riot_data(username: str) -> dict:
             f"https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id"
             f"/{game_name}/{tag_line}?api_key={RIOT_API_KEY}"
         )
-        account = requests.get(account_url).json()
+        account_response = requests.get(account_url)
+        print("Riot API status:", account_response.status_code)
+        print("Riot API response:", account_response.text)
+        account = account_response.json()
         puuid = account.get("puuid")
 
         if not puuid:
@@ -30,15 +33,18 @@ def fetch_riot_data(username: str) -> dict:
             f"https://{RIOT_REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid"
             f"/{puuid}?api_key={RIOT_API_KEY}"
         )
-        summoner = requests.get(summoner_url).json()
-        summoner_id = summoner.get("id")
+        summoner_response = requests.get(summoner_url)
+        print("Summoner API status:", summoner_response.status_code)
+        print("Summoner API response:", summoner_response.text)
+        summoner = summoner_response.json()
+
         summoner_level = summoner.get("summonerLevel", 0)
 
-        # 3. Get ranked stats
+        # 3. Get ranked stats (using puuid now — Riot removed summoner id)
         ranked_url = (
-            f"https://{RIOT_REGION}.api.riotgames.com/lol/league/v4/entries/by-summoner"
-            f"/{summoner_id}?api_key={RIOT_API_KEY}"
-        )
+            f"https://{RIOT_REGION}.api.riotgames.com/lol/league/v4/entries/by-puuid"
+            f"/{puuid}?api_key={RIOT_API_KEY}"
+        )       
         ranked_data = requests.get(ranked_url).json()
 
         rank_info = {}
