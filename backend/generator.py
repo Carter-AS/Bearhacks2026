@@ -1,7 +1,11 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
 
-GEMMA_API_KEY = "AIzaSyDKmnjGahYt-mvjZgc-7LTs9qnSx6-avro"
+load_dotenv()
+
+GEMMA_API_KEY = os.getenv("GEMMA_API_KEY")
 
 def generate_wiki_page(riot_data: dict, steam_data: dict) -> dict:
     try:

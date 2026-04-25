@@ -1,8 +1,12 @@
 import requests
+import os
+from dotenv import load_dotenv
 
-RIOT_API_KEY = "RGAPI-f56c33fb-c44a-4147-bd5b-24040ca18bd8"
-STEAM_API_KEY = "85B394EA9E17DCF0365A60AC4B43BDC9"
-RIOT_REGION = "na1"  # change to euw1, kr, etc. if needed
+load_dotenv()
+
+RIOT_API_KEY = os.getenv("RIOT_API_KEY")
+STEAM_API_KEY = os.getenv("STEAM_API_KEY")
+RIOT_REGION = os.getenv("RIOT_REGION", "na1")
 
 # ── Riot Data ─────────────────────────────────────────────────
 
