@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from data_fetcher import fetch_riot_data, fetch_steam_data
+from generator import generate_wiki_page
 
 app = Flask(__name__)
 CORS(app)
@@ -27,11 +28,24 @@ def generate():
     riot_data = fetch_riot_data(riot_username) if riot_username else {}
     steam_data = fetch_steam_data(steam_username) if steam_username else {}
 
-    # TODO: pass riot_data + steam_data into Gemma 4 generation
+    if riot_data.get("error") or steam_data.get("error"):
+        return jsonify({"error": "Failed to fetch player data", "details": {
+            "riot": riot_data.get("error"),
+            "steam": steam_data.get("error"),
+        }}), 400
+
+    result = generate_wiki_page(riot_data, steam_data)
+
+    if not result["success"]:
+        return jsonify({"error": "Generation failed", "details": result["error"]}), 500
+
     return jsonify({
-        "message": "Data fetched successfully",
-        "riot": riot_data,
-        "steam": steam_data,
+        "username": riot_username or steam_username,
+        "sections": result["sections"],
+        "raw_data": {
+            "riot": riot_data,
+            "steam": steam_data,
+        }
     }), 200
 
 
