@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from data_fetcher import fetch_riot_data, fetch_steam_data
 
 app = Flask(__name__)
 CORS(app)
@@ -23,13 +24,15 @@ def generate():
     if not riot_username and not steam_username:
         return jsonify({"error": "At least one username is required"}), 400
 
-    # TODO: push to Celery queue and return job_id
+    riot_data = fetch_riot_data(riot_username) if riot_username else {}
+    steam_data = fetch_steam_data(steam_username) if steam_username else {}
+
+    # TODO: pass riot_data + steam_data into Gemma 4 generation
     return jsonify({
-        "message": "Generation queued",
-        "job_id": "placeholder-job-id",
-        "riot_username": riot_username,
-        "steam_username": steam_username,
-    }), 202
+        "message": "Data fetched successfully",
+        "riot": riot_data,
+        "steam": steam_data,
+    }), 200
 
 
 # ── Poll job status ───────────────────────────────────────────
