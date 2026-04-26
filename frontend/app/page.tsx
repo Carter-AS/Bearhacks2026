@@ -117,14 +117,19 @@ export default function Home() {
                 />
             </div>
             <div>
-              <label style={{ fontSize: 12, fontFamily: "sans-serif", color: "#54595d", display: "block", marginBottom: 4 }}>Steam username <span style={{ color: "#72777d" }}>(optional)</span></label>
-              <input
-                placeholder="e.g. gaben"
-                value={steamUsername}
-                onChange={e => setSteamUsername(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleGenerate()}
-                style={{ width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid #a2a9b1", borderRadius: 2, fontFamily: "sans-serif", boxSizing: "border-box", color: "#202122" }}
-                />
+            <label style={{ fontSize: 12, fontFamily: "sans-serif", color: "#54595d", display: "block", marginBottom: 4 }}>
+              Steam ID <span style={{ color: "#72777d" }}>(optional)</span>
+            </label>
+            <input
+              placeholder="e.g. 76561198012345678"
+              value={steamUsername}
+              onChange={e => setSteamUsername(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleGenerate()}
+              style={{ width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid #a2a9b1", borderRadius: 2, fontFamily: "sans-serif", boxSizing: "border-box", color: "#202122" }}
+            />
+            <p style={{ fontSize: 11, color: "#72777d", fontFamily: "sans-serif", marginTop: 3 }}>
+              Find your Steam ID at <a href="https://steamidfinder.com" target="_blank" style={{ color: "#3366cc" }}>steamidfinder.com</a>
+            </p>
             </div>
           </div>
 

@@ -4,10 +4,12 @@ import { useParams, useRouter } from "next/navigation";
 
 export default function WikiPage() {
   const params = useParams();
-  const username = params.username as string; 
+  const username = decodeURIComponent(params.username as string);
   const router = useRouter();
   const [pageData, setPageData] = useState<any>(null);
   const [notFound, setNotFound] = useState(false);
+  const [narrating, setNarrating] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   useEffect(() => {
     console.log("Fetching username:", username);
@@ -42,9 +44,44 @@ export default function WikiPage() {
   );
 
   const riot = pageData.riot_data || {};
-  const rank = riot.rank || {};
-  const recent = riot.recent_stats || {};
+  const lol = riot.games?.league_of_legends || {};
+  const rank = lol.rank || {};
+  const recent = lol.recent_stats || {};
+  const steam = pageData.steam_data || {};
   const sections = pageData.sections || [];
+
+
+
+  async function handleNarrate() {
+    setNarrating(true);
+    
+    // Build the text to narrate from the page
+    const textToRead = sections
+      .map((s: any) => `${s.title}. ${s.content}`)
+      .join(" ");
+
+    const res = await fetch("http://localhost:5000/api/narrate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: textToRead }),
+    });
+
+    const data = await res.json();
+    setNarrating(false);
+
+    if (data.audio) {
+      // Convert base64 to blob and play
+      const audioBytes = atob(data.audio);
+      const byteArray = new Uint8Array(audioBytes.length);
+      for (let i = 0; i < audioBytes.length; i++) {
+        byteArray[i] = audioBytes.charCodeAt(i);
+      }
+      const blob = new Blob([byteArray], { type: "audio/mpeg" });
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+    }
+  }
+
 
   return (
     <main style={{ minHeight: "100vh", background: "#f8f9fa", fontFamily: "Georgia, 'Linux Libertine', serif" }}>
@@ -70,6 +107,34 @@ export default function WikiPage() {
           <button style={{ fontSize: 11, padding: "3px 8px", cursor: "pointer", background: "#fff", border: "1px solid #a2a9b1", borderRadius: 2 }}>Claim →</button>
         </div>
 
+
+        {/* Narrate button */}
+        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+          <button
+            onClick={handleNarrate}
+            disabled={narrating}
+            style={{
+              padding: "6px 14px",
+              fontSize: 12,
+              fontFamily: "sans-serif",
+              cursor: narrating ? "not-allowed" : "pointer",
+              opacity: narrating ? 0.6 : 1,
+              background: "#fff",
+              border: "1px solid #a2a9b1",
+              borderRadius: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            🔊 {narrating ? "Generating narration..." : "Listen to this article"}
+          </button>
+
+          {audioUrl && (
+            <audio controls autoPlay src={audioUrl} style={{ height: 32 }} />
+          )}
+        </div>
+
         {/* Nav tabs */}
         <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #a2a9b1", marginBottom: 16, fontFamily: "sans-serif", fontSize: 13 }}>
           {["Article", "Talk", "History"].map((tab, i) => (
@@ -92,16 +157,20 @@ export default function WikiPage() {
             {pageData.display_name || username}
             </h1>
 
-            {/* Lead paragraph */}
-            <p style={{ fontSize: 14, lineHeight: 1.8, marginBottom: 12 }}>
-              <b>{riot.username || username}</b> is a {rank.tier ? `${rank.tier} ${rank.rank}` : "unranked"} League of Legends player on the North American server,
-              currently holding <b>{rank.lp ?? "?"} LP</b> with a career record of <b>{rank.wins ?? "?"} wins</b> and <b>{rank.losses ?? "?"} losses</b> ({rank.win_rate ?? "?"}% win rate).
-              A level <b>{riot.summoner_level ?? "?"}</b> summoner, {riot.username || username} is best known for their work on{" "}
-              <b>{(riot.top_champions || []).join(", ") || "an undisclosed champion pool"}</b>, and a vision score
-              that experts describe as <em>"{recent.avg_vision_score <= 15 ? "concerning" : recent.avg_vision_score <= 25 ? "aspirational" : "passable"}"</em>.
-              <sup style={{ color: "#3366cc", fontSize: 11 }}>[1]</sup>
+           {/* Lead paragraph */}
+            <p style={{ color: "#202122",fontSize: 14, lineHeight: 1.8, marginBottom: 12 }}>
+              <b>{pageData.display_name || username}</b> is a gamer of {rank.tier ? "notable" : "questionable"} repute
+              {rank.tier ? `, currently ranked ${rank.tier} ${rank.rank} in competitive play` : ""},
+              {steam && steam.total_games ? ` the owner of ${steam.total_games} Steam games (${steam.never_played_percent ?? "?"}% of which remain unplayed),` : ""}
+              {" "}and a figure whose digital legacy is, at best, a work in progress.
+              Scholars have yet to reach consensus on their overall contribution to the gaming community,
+              though sources close to the situation describe their playstyle as <em>"{
+                (recent.kda ?? 0) >= 3 ? "calculated" :
+                (recent.kda ?? 0) >= 2 ? "ambitious" :
+                "characterful"
+              }"</em>.
+              <sup style={{ color: "#202122", fontSize: 11 }}>[1]</sup>
             </p>
-
             {/* Table of contents */}
             <div style={{ border: "1px solid #a2a9b1", background: "#f8f9fa", display: "inline-block", padding: "10px 20px", marginBottom: 20, minWidth: 200, borderRadius: 2 }}>
               <p style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Contents</p>
@@ -134,7 +203,7 @@ export default function WikiPage() {
               </div>
             ))}
 
-            {/* Stats table */}
+            {/* Stats table
             <div id="stats" style={{ marginBottom: 20 }}>
               <h2 style={{ fontSize: 20, fontWeight: 400, borderBottom: "1px solid #eaecf0", paddingBottom: 4, marginBottom: 8, color: "#202122" }}>
                 Career statistics
@@ -164,7 +233,7 @@ export default function WikiPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div> */}
 
             {/* Categories */}
             <div style={{ borderTop: "1px solid #a2a9b1", paddingTop: 10, marginTop: 24, fontFamily: "sans-serif", fontSize: 12 }}>
@@ -189,19 +258,42 @@ export default function WikiPage() {
             </div>
           </div>
 
-          {/* Infobox */}
-          <div style={{ border: "1px solid #a2a9b1", fontSize: 12, background: "#f8f9fa", borderRadius: 2, position: "sticky", top: 16 }}>
+            {/* Info Box */}
+            <div style={{ border: "1px solid #a2a9b1", fontSize: 12, background: "#f8f9fa", borderRadius: 2, position: "sticky", top: 16 }}>
             <div style={{ background: "#a2a9b1", color: "#000", textAlign: "center", fontWeight: 700, fontSize: 13, padding: "6px 8px", fontFamily: "sans-serif" }}>
               {riot.username || username}
             </div>
-            <div style={{ textAlign: "center", padding: 12, borderBottom: "1px solid #eaecf0" }}>
-              <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg, #36393f, #5865f2)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>
-                🎮
-              </div>
-              <p style={{ fontSize: 11, color: "#54595d", fontStyle: "italic", marginTop: 6, fontFamily: "sans-serif" }}>
-                Profile image unavailable.<br />Artist's interpretation used.
-              </p>
-            </div>
+            {/* Profile picture */}
+            {(() => {
+              const imageUrl = steam?.cover_url || riot?.champ_image_url || null;
+              return imageUrl ? (
+                <div style={{ textAlign: "center", padding: 8, borderBottom: "1px solid #eaecf0" }}>
+                  <img
+                    src={imageUrl}
+                    alt="Most played game or champion"
+                    style={{
+                      width: "100%",
+                      height: 160,
+                      objectFit: "cover",
+                      objectPosition: "top",  // show the face, not the feet
+                      display: "block",
+                    }}
+                  />
+                  <p style={{ fontSize: 11, color: "#54595d", fontStyle: "italic", marginTop: 6, fontFamily: "sans-serif" }}>
+                    {steam?.most_played?.name || riot?.champ_image_url ? "Most played — their natural habitat." : ""}
+                  </p>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: 12, borderBottom: "1px solid #eaecf0" }}>
+                  <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg, #36393f, #5865f2)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>
+                    🎮
+                  </div>
+                  <p style={{ fontSize: 11, color: "#54595d", fontStyle: "italic", marginTop: 6, fontFamily: "sans-serif" }}>
+                    Profile image unavailable.<br />Artist's interpretation used.
+                  </p>
+                </div>
+              );
+            })()}
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               {[
                 ["Rank", `${rank.tier || "Unranked"} ${rank.rank || ""}`.trim()],

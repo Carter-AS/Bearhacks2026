@@ -3,10 +3,43 @@ from flask_cors import CORS
 from data_fetcher import fetch_riot_data, fetch_steam_data
 from generator import generate_wiki_page
 from database import save_page, get_page, search_pages, browse_pages
+from elevenlabs.client import ElevenLabs
+import os
 
 app = Flask(__name__)
 CORS(app)
 
+
+# eleven labs
+el_client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
+
+@app.route("/api/narrate", methods=["POST"])
+def narrate():
+    data = request.get_json()
+    text = data.get("text", "")
+
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+    try:
+        audio = el_client.text_to_speech.convert(
+            voice_id="JBFqnCBsd6RMkjVDRZzb",  # "George" — sounds like a documentary narrator
+            text=text,
+            model_id="eleven_turbo_v2",
+        )
+
+        # Collect audio bytes
+        audio_bytes = b"".join(audio)
+
+        # Return as base64 so frontend can play it directly
+        import base64
+        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+
+        return jsonify({"audio": audio_b64}), 200
+
+    except Exception as e:
+        print("ElevenLabs error:", e)
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/generate", methods=["POST"])
 def generate():
