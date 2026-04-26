@@ -3,7 +3,7 @@ import psycopg2.extras
 import json
 
 DB_CONFIG = {
-    "dbname": "wikigamer",
+    "dbname": "gamerpedia",
     "user": "carterashley-smith",
     "password": "",
     "host": "localhost",
@@ -14,24 +14,19 @@ def get_conn():
     return psycopg2.connect(**DB_CONFIG)
 
 
-def save_page(username: str, riot_data: dict, steam_data: dict, sections: list, platform: str = "riot"):
+def save_page(username: str, riot_data: dict, steam_data: dict, sections: list, platform: str = "riot", display_name: str = ""):
     conn = get_conn()
     cur = conn.cursor()
     try:
         cur.execute("""
-            INSERT INTO pages (username, platform, riot_data, steam_data, sections)
-            VALUES (%s, %s, %s, %s, %s)
-            ON CONFLICT (username) DO UPDATE SET
-                riot_data = EXCLUDED.riot_data,
-                steam_data = EXCLUDED.steam_data,
-                sections = EXCLUDED.sections
-        """, (
-            username,
-            platform,
-            json.dumps(riot_data),
-            json.dumps(steam_data),
-            json.dumps(sections),
-        ))
+        INSERT INTO pages (username, display_name, platform, riot_data, steam_data, sections)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ON CONFLICT (username) DO UPDATE SET
+            display_name = EXCLUDED.display_name,
+            riot_data = EXCLUDED.riot_data,
+            steam_data = EXCLUDED.steam_data,
+            sections = EXCLUDED.sections
+    """, (username, display_name, platform, json.dumps(riot_data), json.dumps(steam_data), json.dumps(sections)))
         conn.commit()
         return True
     except Exception as e:

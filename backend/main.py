@@ -11,25 +11,26 @@ CORS(app)
 @app.route("/api/generate", methods=["POST"])
 def generate():
     data = request.get_json()
+    display_name = data.get("display_name", "").strip()
     riot_username = data.get("riot_username")
     steam_username = data.get("steam_username")
 
+    if not display_name:
+        return jsonify({"error": "Display name is required"}), 400
     if not riot_username and not steam_username:
-        return jsonify({"error": "At least one username is required"}), 400
+        return jsonify({"error": "At least one game username is required"}), 400
 
     riot_data = fetch_riot_data(riot_username) if riot_username else {}
     steam_data = fetch_steam_data(steam_username) if steam_username else {}
 
-    result = generate_wiki_page(riot_data, steam_data)
+    result = generate_wiki_page(riot_data, steam_data, display_name)
     sections = result.get("sections", [])
-    username = riot_username or steam_username
 
-    save_page(username, riot_data, steam_data, sections)
+    save_page(display_name.lower(), riot_data, steam_data, sections)
 
     return jsonify({
-        "username": username,
+        "username": display_name.lower(),
         "sections": sections,
-        "raw_data": {"riot": riot_data, "steam": steam_data},
     }), 200
 
 
@@ -56,6 +57,13 @@ def browse():
     sort = request.args.get("sort", "recent")
     data = browse_pages(page, sort)
     return jsonify(data), 200
+
+@app.route("/api/check/<display_name>", methods=["GET"])
+def check_name(display_name):
+    page = get_page(display_name.lower())
+    if page:
+        return jsonify({"taken": True}), 200
+    return jsonify({"taken": False}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

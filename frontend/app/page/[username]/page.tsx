@@ -4,19 +4,27 @@ import { useParams, useRouter } from "next/navigation";
 
 export default function WikiPage() {
   const params = useParams();
-  const username = decodeURIComponent(params.username as string);
+  const username = params.username as string; 
   const router = useRouter();
   const [pageData, setPageData] = useState<any>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/page/${encodeURIComponent(username)}`)
-      .then(r => r.json())
+    console.log("Fetching username:", username);
+    fetch(`http://localhost:5000/api/page/${username}`)
+      .then(r => {
+        console.log("Response status:", r.status);
+        return r.json();
+      })
       .then(data => {
+        console.log("Response data:", data);
         if (data.page) setPageData(data.page);
         else setNotFound(true);
       })
-      .catch(() => setNotFound(true));
+      .catch((e) => {
+        console.log("Fetch error:", e);
+        setNotFound(true);
+      });
   }, [username]);
 
   if (notFound) return (
@@ -81,7 +89,7 @@ export default function WikiPage() {
           <div>
             {/* Title */}
             <h1 style={{ fontSize: 30, fontWeight: 400, borderBottom: "1px solid #a2a9b1", paddingBottom: 4, marginBottom: 12, color: "#202122" }}>
-              {riot.username || username}
+            {pageData.display_name || username}
             </h1>
 
             {/* Lead paragraph */}

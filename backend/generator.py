@@ -23,11 +23,11 @@ Return ONLY a valid JSON object with no markdown, no backticks, no preamble. For
   ]
 }"""
 
-def generate_wiki_page(riot_data: dict, steam_data: dict) -> dict:
+def generate_wiki_page(riot_data: dict, steam_data: dict, display_name: str = "") -> dict:
     try:
         prompt = f"""
-Write an ironic Wikipedia article about this gamer using their real stats below.
-Be funny but grounded in the actual numbers — reference specific stats like deaths, win rate, vision score, and champion choices.
+Write an ironic Wikipedia article about a gamer named "{display_name}".
+Use their real stats below. Reference their display name "{display_name}" throughout the article naturally.
 
 RIOT DATA:
 {json.dumps(riot_data, indent=2)}

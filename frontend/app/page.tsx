@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [displayName, setDisplayName] = useState("");
   const [riotUsername, setRiotUsername] = useState("");
   const [steamUsername, setSteamUsername] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -10,7 +11,22 @@ export default function Home() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  async function checkName(name: string) {
+    if (!name.trim()) return;
+    const res = await fetch(`http://localhost:5000/api/check/${encodeURIComponent(name.trim().toLowerCase())}`);
+    const data = await res.json();
+    if (data.taken) setError(`"${name}" already has a Gamerpedia article. Search for it or choose a different name.`);
+    else setError("");
+  }
+  
+  
   async function handleGenerate() {
+
+    if (!displayName.trim()) {
+      setError("A display name is required.");
+      return;
+    }
+  
     if (!riotUsername && !steamUsername) {
       setError("Enter at least one username.");
       return;
@@ -21,9 +37,10 @@ export default function Home() {
       const res = await fetch("http://localhost:5000/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ riot_username: riotUsername, steam_username: steamUsername }),
+        body: JSON.stringify({ display_name: displayName.trim(),riot_username: riotUsername, steam_username: steamUsername }),
       });
       const data = await res.json();
+      console.log("Generate response:", data);
       if (!res.ok) { setError(data.error || "Something went wrong."); setLoading(false); return; }
       router.push(`/page/${encodeURIComponent(data.username)}`);
     } catch {
@@ -70,6 +87,23 @@ export default function Home() {
           <p style={{ fontSize: 13, color: "#54595d", fontFamily: "sans-serif", marginBottom: 20 }}>
             Enter a Riot ID or Steam username to generate an ironic Wikipedia-style article about a gamer.
           </p>
+
+          <div>
+            <label style={{ fontSize: 12, fontFamily: "sans-serif", color: "#54595d", display: "block", marginBottom: 4 }}>
+              Display name <span style={{ color: "#cc3333" }}>*</span>
+            </label>
+            <input
+              placeholder="e.g. Shroud, xQc, Carter"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleGenerate()}
+              onBlur={e => checkName(e.target.value)}
+              style={{ width: "100%", padding: "8px 12px", fontSize: 14, border: "1px solid #a2a9b1", borderRadius: 2, fontFamily: "sans-serif", boxSizing: "border-box", color: "#202122" }}
+            />
+            <p style={{ fontSize: 11, color: "#72777d", fontFamily: "sans-serif", marginTop: 3 }}>
+              This becomes the article title and URL (e.g. /page/shroud)
+            </p>
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
             <div>
