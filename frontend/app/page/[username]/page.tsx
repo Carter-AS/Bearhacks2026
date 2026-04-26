@@ -43,14 +43,21 @@ export default function WikiPage() {
     </main>
   );
 
+  const displayName = (pageData.display_name || username)
+  .split(" ")
+  .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(" ");
+
   const riot = pageData.riot_data || {};
-  const lol = riot.games?.league_of_legends || {};
-  const tft = riot.games?.tft || {};
-  const rank = lol.rank || {};
-  const recent = lol.recent_stats || {};
-  const steam = pageData.steam_data || {};
-  const sections = pageData.sections || [];
-  const profileImageUrl = steam?.avatar || riot?.profile_image_url || null;
+const games = riot.games || {};
+const lol = games.league_of_legends || {};
+const tft = games.tft || {};
+const rank = lol.rank || {};
+const recent = lol.recent_stats || {};
+const steam = pageData.steam_data || {};
+const sections = pageData.sections || [];
+
+const profileImageUrl = steam?.avatar || riot?.profile_image_url || null;
 
 
   async function handleNarrate() {
@@ -99,7 +106,7 @@ export default function WikiPage() {
           {" › "}
           <span onClick={() => router.push("/")} style={{ color: "#3366cc", cursor: "pointer" }}>Gamers</span>
           {" › "}
-          {username}
+          {displayName}
         </p>
 
         {/* Claim banner */}
@@ -156,7 +163,7 @@ export default function WikiPage() {
           <div>
             {/* Title */}
             <h1 style={{ fontSize: 30, fontWeight: 400, borderBottom: "1px solid #a2a9b1", paddingBottom: 4, marginBottom: 12, color: "#202122" }}>
-            {pageData.display_name || username}
+            {displayName}
             </h1>
 
            {/* Lead paragraph */}
@@ -301,7 +308,7 @@ export default function WikiPage() {
             {/* Infobox */}
 <div style={{ border: "1px solid #a2a9b1", fontSize: 12, background: "#f8f9fa", borderRadius: 2, position: "sticky", top: 16 }}>
   <div style={{ background: "#a2a9b1", color: "#000", textAlign: "center", fontWeight: 700, fontSize: 13, padding: "6px 8px", fontFamily: "sans-serif" }}>
-    {pageData.display_name || username}
+    {displayName}
   </div>
 
   {/* Profile image */}
