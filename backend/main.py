@@ -5,6 +5,7 @@ from generator import generate_wiki_page
 from database import save_page, get_page, search_pages, browse_pages
 from elevenlabs.client import ElevenLabs
 import os
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -40,6 +41,17 @@ def narrate():
     except Exception as e:
         print("ElevenLabs error:", e)
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/random", methods=["GET"])
+def random_page():
+    data = browse_pages(page=1, sort="recent")
+    results = data.get("results", [])
+    if not results:
+        return jsonify({"error": "No pages yet"}), 404
+    pick = random.choice(results)
+    return jsonify({"username": pick["username"]}), 200
+
 
 @app.route("/api/generate", methods=["POST"])
 def generate():

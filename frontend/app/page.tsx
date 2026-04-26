@@ -23,7 +23,12 @@ export default function Home() {
     else setError("");
   }
   
-  
+  async function handleRandom() {
+    const res = await fetch("http://localhost:5000/api/random");
+    const data = await res.json();
+    if (data.username) router.push(`/page/${encodeURIComponent(data.username)}`);
+  }
+
   async function handleGenerate() {
 
     if (!displayName.trim()) {
@@ -165,6 +170,22 @@ export default function Home() {
             Browse all articles
           </span>
         </div>
+
+        <div style={{ textAlign: "center", display: "flex", justifyContent: "center", gap: 24 }}>
+          <span
+            onClick={() => router.push("/browse")}
+            style={{ fontSize: 13, color: "#3366cc", cursor: "pointer", fontFamily: "sans-serif", textDecoration: "underline" }}
+          >
+            Browse all articles
+          </span>
+          <span
+            onClick={handleRandom}
+            style={{ fontSize: 13, color: "#3366cc", cursor: "pointer", fontFamily: "sans-serif", textDecoration: "underline" }}
+          >
+            🎲 Random article
+          </span>
+        </div>
+
       </div>
     </main>
   );
