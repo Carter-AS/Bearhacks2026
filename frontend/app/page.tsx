@@ -11,6 +11,10 @@ export default function Home() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const isNameTaken = error.includes("already has a Gamerpedia article");
+  const hasGameUsername = riotUsername.trim() || steamUsername.trim();
+  const canGenerate = displayName.trim() && hasGameUsername && !isNameTaken && !loading;
+
   async function checkName(name: string) {
     if (!name.trim()) return;
     const res = await fetch(`http://localhost:5000/api/check/${encodeURIComponent(name.trim().toLowerCase())}`);
@@ -135,8 +139,18 @@ export default function Home() {
 
           <button
             onClick={handleGenerate}
-            disabled={loading}
-            style={{ padding: "8px 20px", fontSize: 14, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1, fontFamily: "sans-serif", background: "#f8f9fa", border: "1px solid #a2a9b1", borderRadius: 2, color: "#202122" }}
+            disabled={!canGenerate}
+            style={{
+              padding: "8px 20px",
+              fontSize: 14,
+              cursor: canGenerate ? "pointer" : "not-allowed",
+              opacity: canGenerate ? 1 : 0.4,
+              fontFamily: "sans-serif",
+              background: "#f8f9fa",
+              border: "1px solid #a2a9b1",
+              borderRadius: 2,
+              color: "#202122",
+            }}
           >
             {loading ? "Generating..." : "Generate article →"}
           </button>
