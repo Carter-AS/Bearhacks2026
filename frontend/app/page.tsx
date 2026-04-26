@@ -49,8 +49,11 @@ export default function Home() {
         body: JSON.stringify({ display_name: displayName.trim(),riot_username: riotUsername, steam_username: steamUsername }),
       });
       const data = await res.json();
-      console.log("Generate response:", data);
-      if (!res.ok) { setError(data.error || "Something went wrong."); setLoading(false); return; }
+      if (!res.ok) {
+        setError(data.error || "Something went wrong.");
+        setLoading(false);
+        return;
+      }      
       router.push(`/page/${encodeURIComponent(data.username)}`);
     } catch {
       setError("Could not connect to server.");
@@ -161,15 +164,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Browse link */}
-        <div style={{ textAlign: "center" }}>
-          <span
-            onClick={() => router.push("/browse")}
-            style={{ fontSize: 13, color: "#3366cc", cursor: "pointer", fontFamily: "sans-serif", textDecoration: "underline" }}
-          >
-            Browse all articles
-          </span>
-        </div>
+        {/* Browse and random link */}
 
         <div style={{ textAlign: "center", display: "flex", justifyContent: "center", gap: 24 }}>
           <span
@@ -182,7 +177,7 @@ export default function Home() {
             onClick={handleRandom}
             style={{ fontSize: 13, color: "#3366cc", cursor: "pointer", fontFamily: "sans-serif", textDecoration: "underline" }}
           >
-            🎲 Random article
+            Random article
           </span>
         </div>
 

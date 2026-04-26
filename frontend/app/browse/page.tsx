@@ -14,6 +14,11 @@ export default function BrowsePage() {
       .then(data => { setResults(data.results || []); setTotal(data.total || 0); });
   }, [sort]);
 
+  function capitalize(str: string) {
+    return str.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  }
+  
+
   return (
     <main style={{ minHeight: "100vh", background: "#f8f9fa", fontFamily: "Georgia, serif" }}>
       <div style={{ background: "#fff", borderBottom: "1px solid #a2a9b1", padding: "8px 24px", display: "flex", alignItems: "center", gap: 16 }}>
@@ -51,7 +56,7 @@ export default function BrowsePage() {
             style={{ background: "#fff", border: "1px solid #a2a9b1", padding: "14px 18px", marginBottom: 8, cursor: "pointer", borderRadius: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}
           >
             <div>
-              <p style={{ color: "#3366cc", fontSize: 15, marginBottom: 3, fontFamily: "sans-serif" }}>{r.username}</p>
+              <p style={{ color: "#3366cc", fontSize: 15, marginBottom: 3, fontFamily: "sans-serif" }}>{capitalize(r.username)}</p>
               <p style={{ fontSize: 12, color: "#54595d", fontFamily: "sans-serif" }}>
                 Created {new Date(r.created_at).toLocaleDateString()}
               </p>

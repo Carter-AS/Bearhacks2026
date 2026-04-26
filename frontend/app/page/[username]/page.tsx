@@ -104,7 +104,7 @@ const profileImageUrl = steam?.avatar || riot?.profile_image_url || null;
         <p style={{ fontSize: 12, color: "#54595d", fontFamily: "sans-serif", marginBottom: 12 }}>
           <span onClick={() => router.push("/")} style={{ color: "#3366cc", cursor: "pointer" }}>Gamerpedia</span>
           {" › "}
-          <span onClick={() => router.push("/")} style={{ color: "#3366cc", cursor: "pointer" }}>Gamers</span>
+          <span onClick={() => router.push("/browse")} style={{ color: "#3366cc", cursor: "pointer" }}>Gamers</span>
           {" › "}
           {displayName}
         </p>

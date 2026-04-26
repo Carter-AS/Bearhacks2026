@@ -66,8 +66,16 @@ def generate():
         return jsonify({"error": "At least one game username is required"}), 400
 
     riot_data = fetch_riot_data(riot_username) if riot_username else {}
+    print("riot_data result:", riot_data)
+
     steam_data = fetch_steam_data(steam_username) if steam_username else {}
 
+    if riot_username and riot_data.get("error") and not riot_data.get("games"):
+        return jsonify({"error": f"Riot ID not found. Make sure to use the format Name#TAG (e.g. Carter#NA1)"}), 404
+
+    if steam_username and steam_data.get("error") and not steam_data.get("total_games"):
+        return jsonify({"error": f"Steam error: {steam_data['error']}"}), 404
+    
     result = generate_wiki_page(riot_data, steam_data, display_name)
     sections = result.get("sections", [])
 
@@ -112,3 +120,30 @@ def check_name(display_name):
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
+
+@app.route("/api/page/<username>/rename", methods=["PATCH"])
+def rename_page(username):
+    data = request.get_json()
+    new_username = data.get("new_username", "").strip().lower()
+
+    if not new_username:
+        return jsonify({"error": "New username is required"}), 400
+
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE pages SET username = %s, display_name = %s
+            WHERE username = %s
+        """, (new_username, new_username, username))
+        conn.commit()
+        if cur.rowcount == 0:
+            return jsonify({"error": "Page not found"}), 404
+        return jsonify({"message": "Renamed successfully", "username": new_username}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
