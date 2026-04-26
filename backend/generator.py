@@ -39,14 +39,16 @@ def generate_wiki_page(riot_data: dict, steam_data: dict, display_name: str = ""
                 available_sources.append("League of Legends")
                 rank = lol.get("rank", {})
                 stats = lol.get("recent_stats", {})
-                riot_summary += f"""
+                top_champs = lol.get("top_champions", [])
+                riot_summary += f"""```
 LEAGUE OF LEGENDS:
 - Rank: {rank.get("tier")} {rank.get("rank")} — {rank.get("lp")} LP
 - Record: {rank.get("wins")}W / {rank.get("losses")}L ({rank.get("win_rate")}% win rate)
 - Summoner level: {lol.get("summoner_level")}
 - Recent KDA: {stats.get("kda")} ({stats.get("total_kills")}K / {stats.get("total_deaths")}D / {stats.get("total_assists")}A)
 - Average vision score: {stats.get("avg_vision_score")}
-- Top champions: {", ".join(lol.get("top_champions", []))}
+- Top champions: {", ".join(top_champs)}
+- Most played champion: {top_champs[0] if top_champs else "Unknown"} (mention this naturally in the Career section)
 """
             if tft:
                 available_sources.append("TFT")
@@ -60,15 +62,15 @@ TEAMFIGHT TACTICS:
         steam_summary = ""
         if steam_data and not steam_data.get("error"):
             available_sources.append("Steam")
-            steam_summary = f"""
+            most_played = steam_data.get("most_played", {})
+            steam_summary += f"""
 STEAM LIBRARY:
-- Display name: {steam_data.get("display_name")}
 - Total games owned: {steam_data.get("total_games")}
 - Games never played: {steam_data.get("never_played_count")} ({steam_data.get("never_played_percent")}% of library)
-- Total hours across all games: {steam_data.get("total_hours")}
-- Most played game: {steam_data.get("most_played", {}).get("name")} ({steam_data.get("most_played", {}).get("hours")} hours)
-- Top 5 games by hours: {", ".join([f"{g['name']} ({g['hours']}h)" for g in steam_data.get("top_games", [])])}
-- Recently played (last 2 weeks): {", ".join([f"{g['name']} ({g['hours_last_2_weeks']}h)" for g in steam_data.get("recently_played", [])])}
+- Total hours: {steam_data.get("total_hours")}
+- Most played game: {most_played.get("name")} ({most_played.get("hours")} hours) (mention this prominently in the Legacy section)
+- Top 5 games: {", ".join([f"{g['name']} ({g['hours']}h)" for g in steam_data.get("top_games", [])])}
+- Recently played: {", ".join([f"{g['name']} ({g['hours_last_2_weeks']}h)" for g in steam_data.get("recently_played", [])])}
 """
 
         # Tell Gemma exactly what data exists and what doesn't

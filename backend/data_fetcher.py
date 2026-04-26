@@ -44,6 +44,10 @@ def fetch_riot_data(username: str) -> dict:
             summoner = requests.get(summoner_url).json()
             summoner_level = summoner.get("summonerLevel", 0)
 
+            profile_icon_id = summoner.get("profileIconId", 0)
+            profile_icon_url = f"https://ddragon.leagueoflegends.com/cdn/14.8.1/img/profileicon/{profile_icon_id}.png"
+            result["profile_image_url"] = profile_icon_url
+
             ranked_url = (
                 f"https://{RIOT_REGION}.api.riotgames.com/lol/league/v4/entries/by-puuid"
                 f"/{puuid}?api_key={RIOT_API_KEY}"
@@ -256,6 +260,7 @@ def fetch_steam_data(steam_id: str) -> dict:
         return {
             "display_name": player.get("personaname", steam_id),
             "steam_id": steam_id,
+            "avatar": player.get("avatarfull"),  
             "cover_url": cover_url,                    
             "most_played_appid": most_played_game.get("appid") if most_played_game else None,
             "total_games": len(games),

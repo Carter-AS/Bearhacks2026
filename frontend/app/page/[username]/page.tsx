@@ -45,11 +45,12 @@ export default function WikiPage() {
 
   const riot = pageData.riot_data || {};
   const lol = riot.games?.league_of_legends || {};
+  const tft = riot.games?.tft || {};
   const rank = lol.rank || {};
   const recent = lol.recent_stats || {};
   const steam = pageData.steam_data || {};
   const sections = pageData.sections || [];
-
+  const profileImageUrl = steam?.avatar || riot?.profile_image_url || null;
 
 
   async function handleNarrate() {
@@ -102,7 +103,7 @@ export default function WikiPage() {
         </p>
 
         {/* Claim banner */}
-        <div style={{ background: "#eaf3fb", border: "1px solid #a2a9b1", padding: "8px 14px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "sans-serif", fontSize: 12, borderRadius: 2 }}>
+        <div style={{ background: "#eaf3fb", border: "1px solid #a2a9b1", padding: "8px 14px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", fontFamily: "sans-serif", fontSize: 12, borderRadius: 2, color: "#202122" }}>
           <span>Is this you? <b>Claim this article</b> to add your personal quote and early life blurb.</span>
           <button style={{ fontSize: 11, padding: "3px 8px", cursor: "pointer", background: "#fff", border: "1px solid #a2a9b1", borderRadius: 2 }}>Claim →</button>
         </div>
@@ -125,6 +126,7 @@ export default function WikiPage() {
               display: "flex",
               alignItems: "center",
               gap: 6,
+              color: "#202122",
             }}
           >
             🔊 {narrating ? "Generating narration..." : "Listen to this article"}
@@ -173,7 +175,7 @@ export default function WikiPage() {
             </p>
             {/* Table of contents */}
             <div style={{ border: "1px solid #a2a9b1", background: "#f8f9fa", display: "inline-block", padding: "10px 20px", marginBottom: 20, minWidth: 200, borderRadius: 2 }}>
-              <p style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Contents</p>
+              <p style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, marginBottom: 6, color: "#202122" }}>Contents</p>
               <ol style={{ paddingLeft: 18, margin: 0 }}>
                 {sections.map((s: any, i: number) => (
                   <li key={i} style={{ margin: "3px 0" }}>
@@ -191,17 +193,55 @@ export default function WikiPage() {
             </div>
 
             {/* Generated sections */}
-            {sections.map((section: any, i: number) => (
-              <div key={i} id={`section-${i}`} style={{ marginBottom: 20 }}>
-                <h2 style={{ fontSize: 20, fontWeight: 400, borderBottom: "1px solid #eaecf0", paddingBottom: 4, marginBottom: 8, color: "#202122" }}>
-                  {section.title}
-                </h2>
-                <p style={{ fontSize: 14, lineHeight: 1.8, color: "#202122" }}>
-                  {section.content}
-                  <sup style={{ color: "#3366cc", fontSize: 11 }}>[{i + 2}]</sup>
-                </p>
-              </div>
-            ))}
+{sections.map((section: any, i: number) => (
+  <div key={i} id={`section-${i}`} style={{ marginBottom: 20 }}>
+    <h2 style={{ fontSize: 20, fontWeight: 400, borderBottom: "1px solid #eaecf0", paddingBottom: 4, marginBottom: 8, color: "#202122" }}>
+      {section.title}
+    </h2>
+
+    {/* Inject champion image into Career section */}
+    {section.title === "Career" && riot?.champ_image_url && (
+      <div style={{ float: "right", margin: "0 0 12px 16px", border: "1px solid #a2a9b1", background: "#f8f9fa", padding: 4, maxWidth: 120, borderRadius: 2 }}>
+        <img
+          src={riot.champ_image_url}
+          alt="Most played champion"
+          style={{ width: "100%", height: 140, objectFit: "cover", objectPosition: "top", display: "block" }}
+        />
+        <p style={{ fontSize: 10, fontFamily: "sans-serif", color: "#54595d", textAlign: "center", margin: "4px 2px", fontStyle: "italic" }}>
+          {lol?.top_champions?.[0] || "Unknown"}<br />Most played champion
+        </p>
+      </div>
+    )}
+
+    {/* Inject Steam game image into Legacy section */}
+    {section.title === "Legacy and statistics" && steam?.most_played?.name && (() => {
+      const appid = steam?.most_played_appid;
+      const steamImgUrl = appid
+        ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`
+        : null;
+      return steamImgUrl ? (
+        <div style={{ float: "right", margin: "0 0 12px 16px", border: "1px solid #a2a9b1", background: "#f8f9fa", padding: 4, maxWidth: 160, borderRadius: 2 }}>
+          <img
+            src={steamImgUrl}
+            alt="Most played Steam game"
+            style={{ width: "100%", height: 75, objectFit: "cover", display: "block" }}
+          />
+          <p style={{ fontSize: 10, fontFamily: "sans-serif", color: "#54595d", textAlign: "center", margin: "4px 2px", fontStyle: "italic" }}>
+            {steam.most_played.name}<br />{steam.most_played.hours}h played
+          </p>
+        </div>
+      ) : null;
+    })()}
+
+    <p style={{ fontSize: 14, lineHeight: 1.8, color: "#202122" }}>
+      {section.content}
+      <sup style={{ color: "#3366cc", fontSize: 11 }}>[{i + 2}]</sup>
+    </p>
+
+    {/* Clear float after each section */}
+    <div style={{ clear: "both" }} />
+  </div>
+))}
 
             {/* Stats table
             <div id="stats" style={{ marginBottom: 20 }}>
@@ -258,63 +298,86 @@ export default function WikiPage() {
             </div>
           </div>
 
-            {/* Info Box */}
-            <div style={{ border: "1px solid #a2a9b1", fontSize: 12, background: "#f8f9fa", borderRadius: 2, position: "sticky", top: 16 }}>
-            <div style={{ background: "#a2a9b1", color: "#000", textAlign: "center", fontWeight: 700, fontSize: 13, padding: "6px 8px", fontFamily: "sans-serif" }}>
-              {riot.username || username}
-            </div>
-            {/* Profile picture */}
-            {(() => {
-              const imageUrl = steam?.cover_url || riot?.champ_image_url || null;
-              return imageUrl ? (
-                <div style={{ textAlign: "center", padding: 8, borderBottom: "1px solid #eaecf0" }}>
-                  <img
-                    src={imageUrl}
-                    alt="Most played game or champion"
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      objectFit: "cover",
-                      objectPosition: "top",  // show the face, not the feet
-                      display: "block",
-                    }}
-                  />
-                  <p style={{ fontSize: 11, color: "#54595d", fontStyle: "italic", marginTop: 6, fontFamily: "sans-serif" }}>
-                    {steam?.most_played?.name || riot?.champ_image_url ? "Most played — their natural habitat." : ""}
-                  </p>
-                </div>
-              ) : (
-                <div style={{ textAlign: "center", padding: 12, borderBottom: "1px solid #eaecf0" }}>
-                  <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg, #36393f, #5865f2)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>
-                    🎮
-                  </div>
-                  <p style={{ fontSize: 11, color: "#54595d", fontStyle: "italic", marginTop: 6, fontFamily: "sans-serif" }}>
-                    Profile image unavailable.<br />Artist's interpretation used.
-                  </p>
-                </div>
-              );
-            })()}
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <tbody>
-              {[
-                ["Rank", `${rank.tier || "Unranked"} ${rank.rank || ""}`.trim()],
-                ["LP", rank.lp ?? "—"],
-                ["Win rate", rank.win_rate ? `${rank.win_rate}%` : "—"],
-                ["KDA", recent.kda ?? "—"],
-                ["Vision score", recent.avg_vision_score ?? "—"],
-                ["Level", riot.summoner_level ?? "—"],
-                ["Main", (riot.top_champions || [])[0] || "—"],
-                ["Server", "NA1"],
-                ["Status", "Active (regrettably)"],
-              ].map(([label, value], i) => (
-                <tr key={i} style={{ borderTop: "1px solid #eaecf0" }}>
-                  <td style={{ padding: "4px 8px", fontWeight: 700, color: "#54595d", fontFamily: "sans-serif", width: "45%", verticalAlign: "top" }}>{label}</td>
-                  <td style={{ padding: "4px 8px", fontFamily: "sans-serif", color: "#202122" }}>{value}</td>
-                </tr>
-              ))}
-                </tbody>
+            {/* Infobox */}
+<div style={{ border: "1px solid #a2a9b1", fontSize: 12, background: "#f8f9fa", borderRadius: 2, position: "sticky", top: 16 }}>
+  <div style={{ background: "#a2a9b1", color: "#000", textAlign: "center", fontWeight: 700, fontSize: 13, padding: "6px 8px", fontFamily: "sans-serif" }}>
+    {pageData.display_name || username}
+  </div>
 
-            </table>
+  {/* Profile image */}
+  {profileImageUrl ? (
+  <div style={{ textAlign: "center", padding: 12, borderBottom: "1px solid #eaecf0" }}>
+    <img
+      src={profileImageUrl}
+      alt="Profile"
+      style={{
+        width: 80,
+        height: 80,
+        borderRadius: "50%",
+        objectFit: "cover",
+        border: "2px solid #a2a9b1",
+        display: "block",
+        margin: "0 auto",
+      }}
+    />
+    <p style={{ fontSize: 11, color: "#54595d", fontStyle: "italic", marginTop: 6, fontFamily: "sans-serif" }}>
+      {steam?.avatar ? "Steam profile photo." : "League of Legends profile icon."}
+    </p>
+  </div>
+) : (
+  <div style={{ textAlign: "center", padding: 12, borderBottom: "1px solid #eaecf0" }}>
+    <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg, #36393f, #5865f2)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto" }}>
+      🎮
+    </div>
+    <p style={{ fontSize: 11, color: "#54595d", fontStyle: "italic", marginTop: 6, fontFamily: "sans-serif" }}>
+      Profile image unavailable.<br />Artist's interpretation used.
+    </p>
+  </div>
+)}
+
+  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+  <tbody>
+    {[
+      // Always show
+      ["Status", "Active (regrettably)"],
+
+      // LoL stats — only if rank data exists
+      ...(rank.tier ? [
+        ["LoL Rank", `${rank.tier} ${rank.rank}`.trim()],
+        ["LP", rank.lp ?? "—"],
+        ["Win rate", rank.win_rate ? `${rank.win_rate}%` : "—"],
+        ["KDA", recent.kda ?? "—"],
+        ["Vision score", recent.avg_vision_score ?? "—"],
+        ["Level", lol?.summoner_level ?? "—"],
+        ["Main", (lol?.top_champions || [])[0] || "—"],
+      ] : []),
+
+      // TFT stats — only if TFT rank exists
+      ...(tft?.rank?.tier ? [
+        ["TFT Rank", `${tft.rank.tier} ${tft.rank.rank}`.trim()],
+        ["TFT Win rate", tft.rank.win_rate ? `${tft.rank.win_rate}%` : "—"],
+      ] : []),
+
+      // Steam stats — only if steam data exists
+      ...(steam?.total_games ? [
+        ["Steam games", steam.total_games],
+        ["Never played", `${steam.never_played_count} (${steam.never_played_percent}%)`],
+        ["Total hours", steam.total_hours ? `${steam.total_hours}h` : "—"],
+        ["Most played", steam.most_played?.name || "—"],
+      ] : []),
+
+    ].map(([label, value], i) => (
+      <tr key={i} style={{ borderTop: "1px solid #eaecf0" }}>
+        <td style={{ padding: "4px 8px", fontWeight: 700, color: "#54595d", fontFamily: "sans-serif", width: "45%", verticalAlign: "top" }}>{label}</td>
+        <td style={{ padding: "4px 8px", fontFamily: "sans-serif", color: "#202122" }}>{String(value)}</td>
+      </tr>
+    ))}
+      </tbody>
+
+  </table>
+
+
+
           </div>
         </div>
       </div>
