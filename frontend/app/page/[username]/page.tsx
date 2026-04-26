@@ -295,6 +295,7 @@ export default function WikiPage() {
               );
             })()}
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <tbody>
               {[
                 ["Rank", `${rank.tier || "Unranked"} ${rank.rank || ""}`.trim()],
                 ["LP", rank.lp ?? "—"],
@@ -311,6 +312,8 @@ export default function WikiPage() {
                   <td style={{ padding: "4px 8px", fontFamily: "sans-serif", color: "#202122" }}>{value}</td>
                 </tr>
               ))}
+                </tbody>
+
             </table>
           </div>
         </div>

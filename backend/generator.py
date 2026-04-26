@@ -27,27 +27,16 @@ Return ONLY a valid JSON object with no markdown, no backticks, no preamble. For
 
 def generate_wiki_page(riot_data: dict, steam_data: dict, display_name: str = "") -> dict:
     try:
-        steam_summary = ""
-        if steam_data and not steam_data.get("error"):
-            steam_summary = f"""
-STEAM LIBRARY:
-- Display name: {steam_data.get("display_name")}
-- Total games owned: {steam_data.get("total_games")}
-- Games never played: {steam_data.get("never_played_count")} ({steam_data.get("never_played_percent")}% of library)
-- Total hours across all games: {steam_data.get("total_hours")}
-- Most played game: {steam_data.get("most_played", {}).get("name")} ({steam_data.get("most_played", {}).get("hours")} hours)
-- Top 5 games by hours: {", ".join([f"{g['name']} ({g['hours']}h)" for g in steam_data.get("top_games", [])])}
-- Recently played (last 2 weeks): {", ".join([f"{g['name']} ({g['hours_last_2_weeks']}h)" for g in steam_data.get("recently_played", [])])}
-"""
-
+        available_sources = []
+        
         riot_summary = ""
         if riot_data and not riot_data.get("error"):
             games = riot_data.get("games", {})
             lol = games.get("league_of_legends", {})
-            val = games.get("valorant", {})
             tft = games.get("tft", {})
 
             if lol:
+                available_sources.append("League of Legends")
                 rank = lol.get("rank", {})
                 stats = lol.get("recent_stats", {})
                 riot_summary += f"""
@@ -59,8 +48,8 @@ LEAGUE OF LEGENDS:
 - Average vision score: {stats.get("avg_vision_score")}
 - Top champions: {", ".join(lol.get("top_champions", []))}
 """
-
             if tft:
+                available_sources.append("TFT")
                 tft_rank = tft.get("rank", {})
                 riot_summary += f"""
 TEAMFIGHT TACTICS:
@@ -68,18 +57,36 @@ TEAMFIGHT TACTICS:
 - Record: {tft_rank.get("wins")}W / {tft_rank.get("losses")}L ({tft_rank.get("win_rate")}% win rate)
 """
 
-            if val:
-                val_stats = val.get("recent_stats", {})
-                riot_summary += f"""
-VALORANT:
-- Recent KDA: {val_stats.get("kda")} ({val_stats.get("kills")}K / {val_stats.get("deaths")}D / {val_stats.get("assists")}A)
-- Top agents: {", ".join(val.get("top_agents", []))}
+        steam_summary = ""
+        if steam_data and not steam_data.get("error"):
+            available_sources.append("Steam")
+            steam_summary = f"""
+STEAM LIBRARY:
+- Display name: {steam_data.get("display_name")}
+- Total games owned: {steam_data.get("total_games")}
+- Games never played: {steam_data.get("never_played_count")} ({steam_data.get("never_played_percent")}% of library)
+- Total hours across all games: {steam_data.get("total_hours")}
+- Most played game: {steam_data.get("most_played", {}).get("name")} ({steam_data.get("most_played", {}).get("hours")} hours)
+- Top 5 games by hours: {", ".join([f"{g['name']} ({g['hours']}h)" for g in steam_data.get("top_games", [])])}
+- Recently played (last 2 weeks): {", ".join([f"{g['name']} ({g['hours_last_2_weeks']}h)" for g in steam_data.get("recently_played", [])])}
 """
+
+        # Tell Gemma exactly what data exists and what doesn't
+        not_available = []
+        all_possible = ["League of Legends", "Valorant", "TFT", "Steam"]
+        for source in all_possible:
+            if source not in available_sources:
+                not_available.append(source)
 
         prompt = f"""
 Write an ironic Wikipedia article about a gamer named "{display_name}".
-Use ALL of the real stats below — weave them naturally into the prose.
-Be funny, specific, and encyclopedic. Reference actual numbers and game names.
+
+AVAILABLE DATA SOURCES: {", ".join(available_sources) if available_sources else "None"}
+DO NOT MENTION OR INVENT DATA FOR: {", ".join(not_available) if not_available else "None"}
+
+CRITICAL: Only reference games and platforms listed in AVAILABLE DATA SOURCES above.
+Do NOT mention {", ".join(not_available)} at all — not even as a joke or speculation.
+Every stat you reference must come directly from the data below. Do not invent any numbers.
 
 {riot_summary}
 {steam_summary}
