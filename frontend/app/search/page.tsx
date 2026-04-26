@@ -21,7 +21,7 @@ function SearchResults() {
         <span onClick={() => router.push("/")} style={{ fontSize: 18, fontWeight: 700, fontFamily: "sans-serif", color: "#202122", cursor: "pointer" }}>Gamerpedia</span>
       </div>
       <div style={{ maxWidth: 780, margin: "32px auto", padding: "0 24px" }}>
-        <h1 style={{ fontSize: 26, fontWeight: 400, marginBottom: 4 }}>Search results</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 400, marginBottom: 4 , color : "#202122"}}>Search results</h1>
         <p style={{ fontSize: 13, color: "#54595d", fontFamily: "sans-serif", marginBottom: 24 }}>
           {loading ? "Searching..." : `${results.length} result${results.length !== 1 ? "s" : ""} for `}
           {!loading && <em>"{query}"</em>}
